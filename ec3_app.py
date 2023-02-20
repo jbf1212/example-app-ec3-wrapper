@@ -199,5 +199,5 @@ if submitted:
     )
     st.plotly_chart(fig2, theme="streamlit")
     st.markdown(
-        "_Proportions above will not be representative of availability uness 'Return all macthes' is selected._"
+        "_Proportions above will not be representative of availability unless 'Return all macthes' is selected._"
     )

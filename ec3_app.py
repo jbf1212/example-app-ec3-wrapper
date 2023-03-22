@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import numpy as np
+import pydeck as pdk
 from PIL import Image
 
 from ec3 import EC3Materials
@@ -111,7 +112,7 @@ if submitted:
 
     ec3_materials = EC3Materials(bearer_token=ec3_token, ssl_verify=False)
 
-    # Conduct a search of normal weights concrete mixes between 2000 psi and 9000 psi from plants in NY state
+    # Conduct a search of normal weights concrete mixes between min and max strengths
     mat_param_dict = {
         "product_classes": {"EC3": "Concrete >> ReadyMix"},
         "lightweight": weight_type,
@@ -123,6 +124,7 @@ if submitted:
         "id",
         "concrete_compressive_strength_28d",
         "gwp",
+        "name",
         "plant_or_group",
     ]
     if not return_all_bool:
@@ -162,42 +164,119 @@ if submitted:
         elif not isinstance(plant_name, str):
             plant_name = "Unknown"
 
+        plant_lat = rec["plant_or_group"]["owned_by"]["latitude"]
+        plant_long = rec["plant_or_group"]["owned_by"]["longitude"]
+
         new_dict["Compressive Strength [psi]"] = rounded_strength
         new_dict["GWP [kgCO2e]"] = float(rec["gwp"].split()[0])
         new_dict["Plant"] = plant_name
+        new_dict["Product Name"] = rec["name"]
+        new_dict["Latitude"] = plant_lat
+        new_dict["Longitude"] = plant_long
         converted_records.append(new_dict)
 
     df = pd.DataFrame(converted_records)
+    data_length_prior = len(df.index)
     df = remove_outliers(df, 3, ["GWP [kgCO2e]"])
+    data_length_post = len(df.index)
 
     st.markdown("***")
     st.markdown(
-        "_The following chart includes data from **{}** concrete materials. Extreme outliers may be removed from dataset_".format(
-            len(df.index)
+        "_The following chart includes data from **{}** concrete materials._".format(
+            data_length_post
+        )
+    )
+    st.markdown(
+        "_**{}** material records were deemed to be outliers and not included in data below. Material records are considered outliers when their GWP value is more than 3 standard deviations from the mean_".format(
+            data_length_prior - data_length_post
         )
     )
 
-    ## Create simple plotly plot ###
+    ######################################
+    ## Create simple box plot
+    ######################################
     fig = px.box(
         df,
         x="Compressive Strength [psi]",
         y="GWP [kgCO2e]",
         color_discrete_sequence=["steelblue"],
+        hover_data=["Product Name", "Plant"],
     )
     st.plotly_chart(fig, theme="streamlit")
 
     st.markdown("***")
-    ## Create Treemap ###
-    grouped_df = df.groupby(["Plant"]).size().reset_index(name="count")
-    fig2 = px.treemap(
-        grouped_df,
-        path=["Plant"],
-        values="count",
-        color="Plant",
-        color_continuous_scale="tempo",
-        title="Material Count by Plant",
+
+    ######################################
+    ## Create map plot
+    ######################################
+    map_df = (
+        df.groupby(["Plant", "Latitude", "Longitude"])["Plant"]
+        .count()
+        .reset_index(name="EPD_Count")
     )
-    st.plotly_chart(fig2, theme="streamlit")
-    st.markdown(
-        "_Proportions above will not be representative of availability unless 'Return all macthes' is selected._"
+
+    # Define a layer to display on a map
+    mix_layer = pdk.Layer(
+        "ScatterplotLayer",
+        data=map_df,
+        pickable=True,
+        opacity=0.3,
+        stroked=True,
+        filled=True,
+        radius_scale=10,
+        radius_min_pixels=5,
+        radius_max_pixels=60,
+        line_width_min_pixels=1,
+        get_position=["Longitude", "Latitude"],
+        get_radius="EPD_Count",
+        get_fill_color=[74, 152, 127],
+        get_line_color=[9, 77, 108],
     )
+
+    # Set view state
+    # view_state = pdk.data_utils.compute_view(points=map_df[["Latitude", "Longitude"]], view_proportion=0.9) #This should work, but is not
+    mean_lat = map_df.loc[:, "Latitude"].mean()
+    mean_long = map_df.loc[:, "Longitude"].mean()
+    view_state = pdk.ViewState(latitude=mean_lat, longitude=mean_long, zoom=8)
+
+    # Render map
+    r = pdk.Deck(
+        layers=[mix_layer],
+        initial_view_state=view_state,
+        tooltip={"text": "{Plant}\nEPD Count: {EPD_Count}"},
+        map_style="mapbox://styles/mapbox/light-v10",
+    )
+
+    mix_map = st.pydeck_chart(r)
+
+    ######################################
+    ## Plot counts
+    ######################################
+    # Hide index column in dataframe
+    hide_table_row_index = """
+            <style>
+            thead tr th:first-child {display:none}
+            tbody th {display:none}
+            </style>
+            """
+    st.markdown(hide_table_row_index, unsafe_allow_html=True)
+    st.table(map_df[["Plant", "EPD_Count"]].sort_values("EPD_Count", ascending=False))
+
+    # st.markdown("***")
+
+    # ######################################
+    # ## Create Treemap
+    # ######################################
+    # grouped_df = df.groupby(["Plant"]).size().reset_index(name="count")
+    # fig2 = px.treemap(
+    #     grouped_df,
+    #     path=["Plant"],
+    #     values="count",
+    #     color="Plant",
+    #     color_continuous_scale="tempo",
+    #     title="Material Count by Plant",
+    # )
+    # st.plotly_chart(fig2, theme="streamlit")
+    # st.markdown(
+    #     "_Proportions above will not be representative of availability unless 'Return all macthes' is selected._"
+    # )

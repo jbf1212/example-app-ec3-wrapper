@@ -164,8 +164,8 @@ if submitted:
         elif not isinstance(plant_name, str):
             plant_name = "Unknown"
 
-        plant_lat = rec["plant_or_group"]["owned_by"]["latitude"]
-        plant_long = rec["plant_or_group"]["owned_by"]["longitude"]
+        plant_lat = rec["plant_or_group"]["latitude"]
+        plant_long = rec["plant_or_group"]["longitude"]
 
         new_dict["Compressive Strength [psi]"] = rounded_strength
         new_dict["GWP [kgCO2e]"] = float(rec["gwp"].split()[0])

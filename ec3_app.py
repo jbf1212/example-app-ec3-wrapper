@@ -158,18 +158,26 @@ if submitted:
 
         rounded_strength = int(round(conc_strength / 500.0) * 500.0)
 
-        plant_name = rec["plant_or_group"]["owned_by"]["name"]
-        if not plant_name:
-            plant_name = "Unknown"
-        elif not isinstance(plant_name, str):
-            plant_name = "Unknown"
+        plant_owner_name = rec["plant_or_group"]["owned_by"]["name"]
+        plant_local_name = rec["plant_or_group"]["name"]
+
+        if not plant_owner_name:
+            plant_owner_name = "Unknown"
+        elif not isinstance(plant_owner_name, str):
+            plant_owner_name = "Unknown"
+
+        if not plant_local_name:
+            plant_local_name = "Unknown"
+        elif not isinstance(plant_local_name, str):
+            plant_local_name = "Unknown"
 
         plant_lat = rec["plant_or_group"]["latitude"]
         plant_long = rec["plant_or_group"]["longitude"]
 
         new_dict["Compressive Strength [psi]"] = rounded_strength
         new_dict["GWP [kgCO2e]"] = float(rec["gwp"].split()[0])
-        new_dict["Plant"] = plant_name
+        new_dict["Plant_Owner"] = plant_owner_name
+        new_dict["Plant_Name"] = plant_local_name
         new_dict["Product Name"] = rec["name"]
         new_dict["Latitude"] = plant_lat
         new_dict["Longitude"] = plant_long
@@ -200,7 +208,7 @@ if submitted:
         x="Compressive Strength [psi]",
         y="GWP [kgCO2e]",
         color_discrete_sequence=["steelblue"],
-        hover_data=["Product Name", "Plant"],
+        hover_data=["Product Name", "Plant_Owner", "Plant_Name"],
     )
     st.plotly_chart(fig, theme="streamlit")
 
@@ -210,7 +218,7 @@ if submitted:
     ## Create map plot
     ######################################
     map_df = (
-        df.groupby(["Plant", "Latitude", "Longitude"])["Plant"]
+        df.groupby(["Plant_Owner", "Plant_Name", "Latitude", "Longitude"])["Plant_Name"]
         .count()
         .reset_index(name="EPD_Count")
     )
@@ -243,7 +251,7 @@ if submitted:
     r = pdk.Deck(
         layers=[mix_layer],
         initial_view_state=view_state,
-        tooltip={"text": "{Plant}\nEPD Count: {EPD_Count}"},
+        tooltip={"text": "{Plant_Owner}\n{Plant_Name}\nEPD Count: {EPD_Count}"},
         map_style="mapbox://styles/mapbox/light-v10",
     )
 
@@ -260,7 +268,7 @@ if submitted:
             </style>
             """
     st.markdown(hide_table_row_index, unsafe_allow_html=True)
-    st.table(map_df[["Plant", "EPD_Count"]].sort_values("EPD_Count", ascending=False))
+    st.table(map_df[["Plant_Owner", "Plant_Name", "EPD_Count"]].sort_values("EPD_Count", ascending=False))
 
     # st.markdown("***")
 

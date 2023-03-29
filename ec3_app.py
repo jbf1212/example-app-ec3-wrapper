@@ -72,7 +72,7 @@ with st.form(key="concrete_query"):
 
         postal_code = st.text_input("Enter a 5-digit postal code")
         miles = st.number_input(
-            "Miles from region provided", min_value=0, max_value=200, value=10, step=1
+            "Miles from region provided", min_value=0, max_value=500, value=20, step=10
         )
         strength_range = st.slider(
             label="Set range for concrete strength in psi",
@@ -136,6 +136,11 @@ if submitted:
     mat_records = load_mat_data(
         ec3_materials, mat_param_dict, postal_int, miles_str, return_all_bool
     )
+
+    # Warn user if no records found within radius
+    if len(mat_records) == 0:
+        st.warning('No material records found within region. Try adjusting distance or other parameters.', icon="⚠️")
+        st.stop()
 
     ######################################
     # Clean and convert the data

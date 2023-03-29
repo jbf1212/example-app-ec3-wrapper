@@ -132,10 +132,10 @@ if submitted:
     ec3_materials.only_valid = True
 
     # NOTE The following query may take a couple minutes to return all responses
-
-    mat_records = load_mat_data(
-        ec3_materials, mat_param_dict, postal_int, miles_str, return_all_bool
-    )
+    with st.spinner("Searching for materials..."):
+        mat_records = load_mat_data(
+            ec3_materials, mat_param_dict, postal_int, miles_str, return_all_bool
+        )
 
     # Warn user if no records found within radius
     if len(mat_records) == 0:

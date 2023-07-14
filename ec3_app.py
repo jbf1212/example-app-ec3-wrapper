@@ -148,6 +148,8 @@ if submitted:
     # The following code will convert all the compressive strengths to the same units and round to the nearest 500 psi
     mpa_to_psi = 145.03773773  # conversion for megapascal
 
+    missing_location_data = []
+
     converted_records = []
     for rec in mat_records:
         new_dict = {}
@@ -176,8 +178,12 @@ if submitted:
         elif not isinstance(plant_local_name, str):
             plant_local_name = "Unknown"
 
-        plant_lat = rec["plant_or_group"]["latitude"]
-        plant_long = rec["plant_or_group"]["longitude"]
+        try:
+            plant_lat = rec["plant_or_group"]["latitude"]
+            plant_long = rec["plant_or_group"]["longitude"]
+        except KeyError:
+            if plant_local_name not in missing_location_data:
+                st.warning("WARNING: No location data provided for the following plant : " + plant_local_name)
 
         new_dict["Compressive Strength [psi]"] = rounded_strength
         new_dict["GWP [kgCO2e]"] = float(rec["gwp"].split()[0])

@@ -22,15 +22,27 @@ def load_mat_data(mat_obj, param_dict, postal_code, plant_dist, return_all_bool)
 
 
 # @st.cache
-def remove_outliers(df, n_std, col_names):
-    """
-    Remove extreme outliers that are more than n_std standard deviations away from mean
-    """
-    for col in df[col_names]:
-        mean = df[col].mean()
-        sd = df[col].std()
+# def remove_outliers(df, n_std, col_names):
+#     """
+#     Remove extreme outliers that are more than n_std standard deviations away from mean
+#     """
+#     for col in df[col_names]:
+#         mean = df[col].mean()
+#         sd = df[col].std()
 
-        df = df[(df[col] <= mean + (n_std * sd))]
+#         df = df[(df[col] <= mean + (n_std * sd))]
+
+#     return df
+
+def remove_outliers(df, col_names):
+    """
+    Remove extreme outliers based on IQR method
+    """
+    q1 = df[col_names].quantile(0.25)
+    q3 = df[col_names].quantile(0.75)
+    iqr = q3 - q1
+
+    df = df[~((df[col_names] < (q1 - 1.5 * iqr)) |(df[col_names] > (q3 + 1.5 * iqr))).any(axis=1)]
 
     return df
 
@@ -196,7 +208,7 @@ if submitted:
 
     df = pd.DataFrame(converted_records)
     data_length_prior = len(df.index)
-    df = remove_outliers(df, 3, ["GWP [kgCO2e/m³]"])
+    df = remove_outliers(df, ["GWP [kgCO2e/m³]"])
     data_length_post = len(df.index)
 
     st.markdown("***")

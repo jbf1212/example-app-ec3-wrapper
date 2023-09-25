@@ -217,7 +217,7 @@ if submitted:
     fig = px.box(
         df,
         x="Compressive Strength [psi]",
-        y="GWP [kgCO2e]",
+        y="GWP [kgCO2e/m³]",
         color_discrete_sequence=["steelblue"],
         hover_data=["Product Name", "Plant_Owner", "Plant_Name"],
     )

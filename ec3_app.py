@@ -218,7 +218,7 @@ if submitted:
         )
     )
     st.markdown(
-        "_**{}** material records were deemed to be outliers and not included in data below. Material records are considered outliers when their GWP value is more than 3 standard deviations from the mean_".format(
+        "_**{}** material records were deemed to be outliers and not included in data below. Material records are considered outliers based on the Interquartile Range (IQR) method._".format(
             data_length_prior - data_length_post
         )
     )

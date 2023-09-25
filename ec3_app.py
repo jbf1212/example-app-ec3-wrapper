@@ -186,7 +186,7 @@ if submitted:
                 st.warning("WARNING: No location data provided for the following plant : " + plant_local_name)
 
         new_dict["Compressive Strength [psi]"] = rounded_strength
-        new_dict["GWP [kgCO2e]"] = float(rec["gwp"].split()[0])
+        new_dict["GWP [kgCO2e/m³]"] = float(rec["gwp"].split()[0])
         new_dict["Plant_Owner"] = plant_owner_name
         new_dict["Plant_Name"] = plant_local_name
         new_dict["Product Name"] = rec["name"]
@@ -196,7 +196,7 @@ if submitted:
 
     df = pd.DataFrame(converted_records)
     data_length_prior = len(df.index)
-    df = remove_outliers(df, 3, ["GWP [kgCO2e]"])
+    df = remove_outliers(df, 3, ["GWP [kgCO2e/m³]"])
     data_length_post = len(df.index)
 
     st.markdown("***")

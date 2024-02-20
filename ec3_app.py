@@ -97,12 +97,12 @@ with st.form(key="concrete_query"):
         num_of_materials = st.number_input("Maximum number of concretes", value=500)
         return_all_bool = st.checkbox("Return all matches")
         st.markdown(
-            '<span style="color:#094D6C;"> Returning all matches will ignore the maximum set. *</span>',
+            '<span style="color:#094D6C;"> Returning all matches will ignore the maximum set.</span>',
             unsafe_allow_html=True,
         )
         submitted = st.form_submit_button(label="Search Concrete Materials 🔎")
         st.markdown(
-            '<span style="color:#094D6C;"> Note! Queries may take several minutes to run depending on the number of materials being returned. *</span>',
+            '<span style="color:#094D6C;"> Note! Queries may take several minutes to run depending on the number of materials being returned.</span>',
             unsafe_allow_html=True,
         )
 

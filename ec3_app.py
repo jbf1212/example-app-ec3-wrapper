@@ -196,6 +196,8 @@ if submitted:
         except KeyError:
             if plant_local_name not in missing_location_data:
                 st.warning("WARNING: No location data provided for the following plant : " + plant_local_name)
+                missing_location_data.append(plant_local_name)
+            continue
 
         new_dict["Compressive Strength [psi]"] = rounded_strength
         new_dict["GWP [kgCO2e/m³]"] = float(rec["gwp"].split()[0])

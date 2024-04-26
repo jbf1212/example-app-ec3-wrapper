@@ -5,6 +5,8 @@ import numpy as np
 import pydeck as pdk
 from PIL import Image
 
+from streamlit_chart_container import chart_container
+
 from ec3 import EC3Materials
 
 ec3_token = st.secrets["EC3_TOKEN"]
@@ -235,7 +237,10 @@ if submitted:
         color_discrete_sequence=["steelblue"],
         hover_data=["Product Name", "Plant_Owner", "Plant_Name"],
     )
-    st.plotly_chart(fig, theme="streamlit")
+
+    with chart_container(df):
+        st.write("**GWP by Compressive Strength**")
+        st.plotly_chart(fig, theme="streamlit")
 
     st.markdown("***")
 

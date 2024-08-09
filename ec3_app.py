@@ -134,13 +134,14 @@ if submitted:
         "concrete_compressive_strength_at_28d__lt": strength_max,
     }
 
-    ec3_materials.return_fields = [
-        "id",
-        "concrete_compressive_strength_28d",
-        "gwp",
-        "name",
-        "plant_or_group",
-    ]
+    # ec3_materials.return_fields = [
+    #     "id",
+    #     "open_xpd_uuid",
+    #     "concrete_compressive_strength_28d",
+    #     "gwp",
+    #     "name",
+    #     "plant_or_group",
+    # ]
     if not return_all_bool:
         ec3_materials.max_records = num_of_materials
     ec3_materials.only_valid = True

@@ -11,18 +11,6 @@ from ec3 import EC3Materials
 
 ec3_token = st.secrets["EC3_TOKEN"]
 
-# NOTE Not caching since I want data to refresh when user resubmits query
-# @st.cache
-def load_mat_data(mat_obj, param_dict, postal_code, plant_dist, return_all_bool):
-    mat_records = mat_obj.get_materials_within_region(
-        postal_code,
-        plant_distance=plant_dist,
-        return_all=return_all_bool,
-        params=param_dict,
-    )
-    return mat_records
-
-
 # @st.cache
 # def remove_outliers(df, n_std, col_names):
 #     """
@@ -127,12 +115,23 @@ if submitted:
     ec3_materials = EC3Materials(bearer_token=ec3_token, ssl_verify=False)
 
     # Conduct a search of normal weights concrete mixes between min and max strengths
-    mat_param_dict = {
-        "product_classes": {"EC3": "Concrete >> ReadyMix"},
-        "lightweight": weight_type,
-        "concrete_compressive_strength_at_28d__gt": strength_min,
-        "concrete_compressive_strength_at_28d__lt": strength_max,
-    }
+    mat_filters = [
+        {
+        "field": "concrete_compressive_strength_at_28d",
+        "op": "gt",
+        "arg": strength_min
+        },
+        {
+        "field": "concrete_compressive_strength_at_28d",
+        "op": "lt",
+        "arg": strength_max
+        },
+        {
+        "field": "lightweight",
+        "op": "exact",
+        "arg": weight_type
+        }
+    ]
 
     # ec3_materials.return_fields = [
     #     "id",
@@ -141,16 +140,16 @@ if submitted:
     #     "gwp",
     #     "name",
     #     "plant_or_group",
+    #     # "plant_or_group__owned_by__name"
     # ]
+
     if not return_all_bool:
         ec3_materials.max_records = num_of_materials
     ec3_materials.only_valid = True
 
     # NOTE The following query may take a couple minutes to return all responses
     with st.spinner("Searching for materials..."):
-        mat_records = load_mat_data(
-            ec3_materials, mat_param_dict, postal_int, miles_str, return_all_bool
-        )
+        mat_records = ec3_materials.get_materials_within_region_mf("ReadyMix", mat_filters, postal_int, plant_distance=miles_str, return_all=return_all_bool)
 
     # Warn user if no records found within radius
     if len(mat_records) == 0:
@@ -166,6 +165,7 @@ if submitted:
     missing_location_data = []
 
     converted_records = []
+
     for rec in mat_records:
         new_dict = {}
         split_strength = rec["concrete_compressive_strength_28d"].split()

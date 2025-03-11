@@ -11,7 +11,7 @@ from ec3 import EC3Materials
 
 ec3_token = st.secrets["EC3_TOKEN"]
 
-# @st.cache
+# @st.cache_data
 # def remove_outliers(df, n_std, col_names):
 #     """
 #     Remove extreme outliers that are more than n_std standard deviations away from mean

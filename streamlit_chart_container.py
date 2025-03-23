@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 
-@st.cache
+@st.cache_data
 def _to_csv(data: pd.DataFrame):
     return data.to_csv().encode("utf-8")
 

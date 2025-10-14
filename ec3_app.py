@@ -283,7 +283,7 @@ if submitted:
         layers=[mix_layer],
         initial_view_state=view_state,
         tooltip={"text": "{Plant_Owner}\n{Plant_Name}\nEPD Count: {EPD_Count}"},
-        map_style="mapbox://styles/mapbox/light-v10",
+        map_style=None,
     )
 
     mix_map = st.pydeck_chart(r)

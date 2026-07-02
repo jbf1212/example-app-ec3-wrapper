@@ -55,7 +55,7 @@ def chart_container(
         yield
 
     with tab_2:
-        st.dataframe(data, use_container_width=True)
+        st.dataframe(data, width="stretch")
 
     with tab_3:
         export_data = data.head(1_000_000)

@@ -237,7 +237,28 @@ if submitted:
         y="GWP [kgCO2e/m³]",
         color_discrete_sequence=["steelblue"],
         hover_data=["Product Name", "Plant_Owner", "Plant_Name"],
+        points="all",
     )
+    fig.update_traces(jitter=0.75, pointpos=0, marker=dict(opacity=0.4, size=4))
+
+    # Annotate each box with the count of data points it represents, placed
+    # just above the top of that box's data (including outlier points)
+    gwp_col = "GWP [kgCO2e/m³]"
+    group_stats = df.groupby("Compressive Strength [psi]")[gwp_col].agg(["max", "count"])
+    gwp_range = df[gwp_col].max() - df[gwp_col].min()
+    y_offset = gwp_range * 0.05 if gwp_range > 0 else max(df[gwp_col].max() * 0.05, 1)
+
+    for strength_value, row in group_stats.iterrows():
+        fig.add_annotation(
+            x=strength_value,
+            y=row["max"] + y_offset,
+            xref="x",
+            yref="y",
+            text=f"(n={int(row['count'])})",
+            showarrow=False,
+            font=dict(size=10),
+        )
+    fig.update_yaxes(range=[df[gwp_col].min() - y_offset, df[gwp_col].max() + y_offset * 3])
 
     with chart_container(df):
         st.write("**GWP by Compressive Strength**")
